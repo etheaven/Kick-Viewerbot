@@ -111,23 +111,22 @@ class ViewerBot:
         self.should_stop = True  # Set the flag to True
 
     def update_display(self):
-        with Live(console=console, refresh_per_second=10) as live:
-            while True:
-                table = Table(show_header=False, show_edge=False)
-                table.add_column("Info", justify="right")
-                table.add_column("Value", justify="left")
-                
-                text = Text(f"Number of requests sent: {self.request_count}")
-                text.stylize("bold magenta")
-                table.add_row(text, Spinner("aesthetic"))
-                
-                active_threads_text = Text(f"Active threads: {self.active_threads}")
-                active_threads_text.stylize("bold cyan")
-                table.add_row(active_threads_text, Spinner("aesthetic"))
-                
-                live.update(table)
-                if self.should_stop:
-                    break
+        while not self.should_stop:
+            console.clear()
+            table = Table(show_header=False, show_edge=False)
+            table.add_column("Info", justify="right")
+            table.add_column("Value", justify="left")
+            
+            text = Text(f"Number of requests sent: {self.request_count}")
+            text.stylize("bold magenta")
+            table.add_row(text, "")
+            
+            active_threads_text = Text(f"Active threads: {self.active_threads}")
+            active_threads_text.stylize("bold cyan")
+            table.add_row(active_threads_text, "")
+            
+            console.print(table)
+            time.sleep(1)  # Update every second
 
     def open_url(self, proxy_data):
         self.active_threads += 1

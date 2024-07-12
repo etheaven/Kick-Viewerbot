@@ -134,10 +134,10 @@ class ViewerBot:
             headers = {'User-Agent': ua.random}
             current_index = self.all_proxies.index(proxy_data)
 
-            if proxy_data['url'] == "":
+            if not proxy_data['url']:
                 proxy_data['url'] = self.get_url()
             current_url = proxy_data['url']
-            if current_url == "":
+            if not current_url:
                 if self.debug_mode:
                     console.print("URL is empty, cannot open", style="bold red")
                 return
@@ -145,21 +145,22 @@ class ViewerBot:
                 if time.time() - proxy_data['time'] >= random.randint(1, 5):
                     current_proxy = {"http": proxy_data['proxy'], "https": proxy_data['proxy']}
                     with requests.Session() as s:
-                        s.head(current_url, proxies=current_proxy, headers=headers, timeout=10)
-                        self.request_count += 1
+                        response = s.head(current_url, proxies=current_proxy, headers=headers, timeout=10, allow_redirects=True)
+                        if response.status_code == 200:
+                            self.request_count += 1
                     proxy_data['time'] = time.time()
                     self.all_proxies[current_index] = proxy_data
             except requests.exceptions.RequestException as e:
                 if self.debug_mode:
-                    console.print(f"Error opening URL: {e}, proxy used for that{proxy_data['proxy']}", style="bold red")
-                else:
-                    pass
-            finally:
-                self.active_threads -= 1
-                self.thread_semaphore.release()  # Release the semaphore
-
-        except (KeyboardInterrupt):
+                    console.print(f"Error opening URL: {e}, proxy used: {proxy_data['proxy']}", style="bold red")
+            except Exception as e:
+                if self.debug_mode:
+                    console.print(f"Unexpected error: {e}", style="bold red")
+        except KeyboardInterrupt:
             self.should_stop = True
+        finally:
+            self.active_threads -= 1
+            self.thread_semaphore.release()  # Release the semaphore
 
     def main(self):
         start = datetime.datetime.now()

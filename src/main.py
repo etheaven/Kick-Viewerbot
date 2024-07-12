@@ -103,12 +103,17 @@ class ViewerBotGUI(customtkinter.CTk):
         if self.status == "Stopped":
             nb_of_threads = self.nb_threads_entry.get()
             self.channel_name = self.channel_name_entry.get()
+            print("Got channel")
             self.bot = ViewerBot(nb_of_threads, self.channel_name, self.proxylist, self.proxy_imported, self.slider.get(), type_of_proxy=self.segemented_button_var)
+            print("Got bot")
             self.thread = Thread(target=self.bot.main)
+            print("Got Thread")
             self.after(200, self.configure_label)
             self.after(200, self.proxies_number)
             self.thread.daemon = True
+            print("Starting thread")
             self.thread.start()
+            print("Thread started")
             # Change status and disable/enable buttons
             self.status = "Running"
             self.nb_threads_entry.configure(state="disabled")
@@ -119,6 +124,7 @@ class ViewerBotGUI(customtkinter.CTk):
             self.status_label.configure(text=f"Status: {self.status}")
             # Append thread to list of threads
             self.threads.append(self.thread)
+            print("Threads: ", self.threads)
         
     def stop_bot(self):
         if self.status == "Running":

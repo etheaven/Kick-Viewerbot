@@ -19,12 +19,14 @@ class ViewerBot:
         self.proxylist = proxylist
         self.all_proxies = []
         self.proxyrefreshed = True
-        self.debug_mode = False
+        self.debug_mode = True
         # Add a new attribute for the URL
         self.current_url = None
         # Start a new thread that refreshes the URL every second
+        print("Starting URL refresh thread")
         self.url_refresh_thread = Thread(target=self.refresh_url)
         self.url_refresh_thread.start()
+        print("URL refresh thread started")
         try:
             self.type_of_proxy = type_of_proxy.get()
         except:
@@ -33,12 +35,15 @@ class ViewerBot:
         self.timeout = timeout
         self.channel_url = "https://www.kick.com/" + channel_name.lower()
         self.proxyreturned1time = False
+        print("Initializing semaphore")
         self.thread_semaphore = Semaphore(int(nb_of_threads))  # Semaphore to control thread count
+        print("Semaphore initialized")
         self.session = self.create_session()
+        print("Session created")
         plugins_dir = streamlink.plugins.__path__[0]
 
         plugin_file = os.path.join(plugins_dir, "kick.py")
-
+        print("Checking if plugin exists")
         if not os.path.exists(plugin_file):
             # Chemin du fichier du plugin source
             plugin_source = os.path.dirname(os.path.abspath(__file__)) + "/streamlinks_plugins/kick.py"
@@ -52,12 +57,14 @@ class ViewerBot:
             print("the plugin Kick as been updated successful")
         
     def create_session(self):
-        # Create a session for making requests
+        print("Creating session")
         self.ua = UserAgent()
+        print("User agent created")
         session = Streamlink()
+        print("Session created")
         if 'kick' not in session.get_plugins():
             print("The Kick plugin is not installed, please install it and try again.")
-            return
+            return None
         session.set_option("http-headers", {
             "Accept-Language": "en-US,en;q=0.5",
             "Connection": "keep-alive",
@@ -191,18 +198,25 @@ class ViewerBot:
 
     def refresh_url(self):
         while not self.stop_event:
-            # Create a new session without a proxy
-            session = self.create_session()
-            # Update the current URL
-            self.current_url = self.get_url(session)
-            # Wait for 1 second
-            time.sleep(0.1)
+            try:
+                # Create a new session without a proxy
+                session = self.create_session()
+                # Update the current URL
+                self.current_url = self.get_url(session)
+                # Wait for 0.1 second
+                time.sleep(0.1)
+            except Exception as e:
+                print(f"Error in refresh_url: {e}")
+                time.sleep(1)  # Wait a bit longer if there's an error
+
 
     def main(self):
-
+        print("Starting main")
         self.proxies = self.get_proxies()
+        print("Got proxies")
         start = datetime.datetime.now()
         while not self.stop_event:
+            print("Starting loop")
             elapsed_seconds = (datetime.datetime.now() - start).total_seconds()
 
             for p in self.proxies:

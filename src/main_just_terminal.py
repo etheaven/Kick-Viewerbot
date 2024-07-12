@@ -114,20 +114,20 @@ class ViewerBot:
         with Live(console=console, refresh_per_second=10) as live:
             while True:
                 table = Table(show_header=False, show_edge=False)
-                table.add_column(justify="right")
-                table.add_column(justify="left")
+                table.add_column("Info", justify="right")
+                table.add_column("Value", justify="left")
                 
                 text = Text(f"Number of requests sent: {self.request_count}")
                 text.stylize("bold magenta")
                 table.add_row(text, Spinner("aesthetic"))
                 
                 active_threads_text = Text(f"Active threads: {self.active_threads}")
-                active_threads_text.stylize("bold cyan")  # add style to the active threads text
-                table.add_row(active_threads_text, Spinner("aesthetic"))  # display the number of active threads
+                active_threads_text.stylize("bold cyan")
+                table.add_row(active_threads_text, Spinner("aesthetic"))
                 
                 live.update(table)
                 if self.should_stop:
-                    sys.exit()
+                    break
 
     def open_url(self, proxy_data):
         self.active_threads += 1
